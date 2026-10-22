@@ -6,6 +6,7 @@ Needs only the standard library. It calls /reset, so point it at a throwaway or 
 """
 import json
 import os
+import ssl
 import sys
 import urllib.error
 import urllib.request
@@ -16,6 +17,12 @@ BASE = os.environ.get("BASE", "http://localhost:3000").rstrip("/")
 KEY = os.environ.get("API_KEY", "testkey")
 failures = 0
 
+try:  # some Python installs ship without root certificates; certifi (in requirements-dev) fixes that
+    import certifi
+    SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+except ImportError:
+    SSL_CONTEXT = None
+
 
 def call(method, path, body=None, headers=None, key=KEY):
     h = {"Content-Type": "application/json", **(headers or {})}
@@ -24,7 +31,7 @@ def call(method, path, body=None, headers=None, key=KEY):
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(BASE + path, data=data, method=method, headers=h)
     try:
-        with urllib.request.urlopen(req) as r:
+        with urllib.request.urlopen(req, context=SSL_CONTEXT) as r:
             return r.status, json.loads(r.read() or b"null"), r.headers
     except urllib.error.HTTPError as e:
         raw = e.read()
