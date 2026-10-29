@@ -109,6 +109,7 @@
   .ref dd{margin:0 0 8px;font-weight:600;word-break:break-all}
   .ref dd:last-child{margin:0}
 
+  .hint{margin:0;color:var(--muted);font-size:.9rem}
   .search{display:flex;gap:8px;flex-wrap:wrap}
   .search input{flex:1 1 240px}
   .list{margin-top:14px;display:grid;gap:10px}
@@ -166,6 +167,12 @@
 
     <aside class="card side" id="side" aria-live="polite"></aside>
   </div>
+
+  <section class="card" id="visit" aria-labelledby="visitTitle" style="margin-bottom:20px" hidden>
+    <div class="card-head"><h2 id="visitTitle">Booked in this visit</h2></div>
+    <p class="hint">Every booking you make on this page appears here, whichever email you use.</p>
+    <div class="list" id="visitList"></div>
+  </section>
 
   <section class="card" aria-labelledby="mineTitle" style="margin-bottom:20px">
     <div class="card-head"><h2 id="mineTitle">Find or cancel a booking</h2></div>
@@ -311,7 +318,7 @@ async function submitBooking(e) {
   busy = true; $('book').disabled = true; $('book').textContent = 'Booking…';
   const r = await api('POST', '/bookings', { slot_id: chosen.id, name: $('name').value, email: $('email').value }, { 'Idempotency-Key': idem });
   busy = false;
-  if (r.status === 201) { showConfirmation(r.j); loadSlots(); $('lookup').value = r.j.email; findBookings(false); return; }
+  if (r.status === 201) { visit.push(r.j); saveVisit(); renderVisit(); showConfirmation(r.j); loadSlots(); $('lookup').value = r.j.email; findBookings(false); return; }
   $('book').disabled = false; $('book').textContent = 'Confirm booking';
   if (r.status === 409) { $('formErr').textContent = 'Sorry, someone just booked that time. Please choose another.'; idem = crypto.randomUUID(); chosen = null; loadSlots().then(renderSide); toast('That time was just taken', 'bad'); return; }
   idem = crypto.randomUUID();
@@ -332,7 +339,7 @@ function showConfirmation(b) {
 function bookingRow(b) {
   const s = slotById[b.slot_id];
   return `<div class="bk" data-id="${esc(b.id)}"><div><b>${s ? esc(when(s)) : 'Slot ' + esc(b.slot_id)}<span class="badge ${esc(b.status)}">${esc(b.status)}</span></b>
-    <small>${s ? esc(s.provider) + ' · ' : ''}${esc(b.name)} · Ref ${esc(b.id)}</small></div>
+    <small>${s ? esc(s.provider) + ' · ' : ''}${esc(b.name)} · ${esc(b.email)} · Ref ${esc(b.id)}</small></div>
     ${b.status === 'confirmed' ? '<button class="btn danger sm" data-cancel type="button">Cancel</button>' : ''}</div>`;
 }
 async function findBookings(more) {
@@ -348,17 +355,36 @@ async function findBookings(more) {
 }
 $('searchForm').onsubmit = (e) => { e.preventDefault(); findBookings(false); };
 $('more').onclick = () => findBookings(true);
-$('mine').onclick = async (e) => {
+async function cancelClick(e) {
   const b = e.target.closest('[data-cancel]'); if (!b) return;
   if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'Confirm cancel?'; setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = 'Cancel'; } }, 4000); return; }
   b.disabled = true; b.textContent = 'Cancelling…';
-  const r = await api('DELETE', '/bookings/' + b.closest('.bk').dataset.id);
-  if (r.ok) { toast('Booking cancelled', 'good'); loadSlots(); findBookings(false); }
-  else { b.disabled = false; b.textContent = 'Cancel'; toast(r.j.error || 'Could not cancel', 'bad'); }
-};
+  const id = b.closest('.bk').dataset.id;
+  const r = await api('DELETE', '/bookings/' + id);
+  if (r.ok) {
+    visit.forEach((v) => { if (v.id === id) v.status = 'cancelled'; }); saveVisit(); renderVisit();
+    toast('Booking cancelled', 'good'); loadSlots(); if ($('lookup').value.trim()) findBookings(false);
+  } else { b.disabled = false; b.textContent = 'Cancel'; toast(r.j.error || 'Could not cancel', 'bad'); }
+}
+$('mine').onclick = cancelClick;
+$('visitList').onclick = cancelClick;
+
+/* ---------- booked in this visit: every booking made on this page, whatever the email ---------- */
+let visit = [];
+try { visit = JSON.parse(sessionStorage.getItem('visit') || '[]'); } catch { visit = []; }
+function saveVisit() { try { sessionStorage.setItem('visit', JSON.stringify(visit)); } catch {} }
+function renderVisit() {
+  $('visit').hidden = !visit.length;
+  $('visitList').innerHTML = visit.map(bookingRow).join('');
+}
+async function refreshVisit() {  // statuses may have changed since the page was last open
+  await Promise.all(visit.map(async (v) => { const r = await api('GET', '/bookings/' + v.id); if (r.ok) Object.assign(v, r.j); }));
+  saveVisit(); renderVisit();
+}
 
 renderSide();
-loadSlots();
+renderVisit();
+loadSlots().then(refreshVisit);
 </script>
 </body>
 </html>
