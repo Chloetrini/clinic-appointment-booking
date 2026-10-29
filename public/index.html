@@ -6,19 +6,31 @@
 <title>Clinic Booking</title>
 <meta name="description" content="Book a clinic appointment in under a minute.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f766e'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>
+  // apply a saved choice before the page paints, so there is no flash of the wrong theme
+  try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
 <style>
+  /* light is the default; dark follows the device unless the visitor picks a side with the toggle */
   :root {
     --bg:#f4f7f8; --surface:#ffffff; --surface-2:#f0f5f6; --ink:#12232b; --muted:#566972; --line:#dce5e8;
     --brand:#0f766e; --brand-strong:#0b5f58; --brand-soft:#e1f3f1; --brand-ink:#ffffff;
     --good:#067647; --good-soft:#e6f6ee; --bad:#b42318; --bad-soft:#fdeceb; --warn:#8a5a00; --warn-soft:#fff4dc;
     --shadow:0 1px 2px rgba(18,35,43,.06),0 8px 24px rgba(18,35,43,.06); --radius:14px;
+    color-scheme:light;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#0c171c; --surface:#13222a; --surface-2:#192c35; --ink:#e8f0f3; --muted:#9db1ba; --line:#263c46;
+    :root:not([data-theme="light"]) { --bg:#0c171c; --surface:#13222a; --surface-2:#192c35; --ink:#e8f0f3; --muted:#9db1ba; --line:#263c46;
       --brand:#2dd4bf; --brand-strong:#5eead4; --brand-soft:#123a3a; --brand-ink:#04211e;
       --good:#6ee7a8; --good-soft:#12352a; --bad:#ff9a90; --bad-soft:#3b1b19; --warn:#f6c453; --warn-soft:#3a2f10;
-      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); }
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark; }
   }
+  :root[data-theme="dark"] { --bg:#0c171c; --surface:#13222a; --surface-2:#192c35; --ink:#e8f0f3; --muted:#9db1ba; --line:#263c46;
+    --brand:#2dd4bf; --brand-strong:#5eead4; --brand-soft:#123a3a; --brand-ink:#04211e;
+    --good:#6ee7a8; --good-soft:#12352a; --bad:#ff9a90; --bad-soft:#3b1b19; --warn:#f6c453; --warn-soft:#3a2f10;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark; }
+  body,header.top,.card,.slot,.pill,.pg,input,.steps li,.bk{transition:background-color .2s,border-color .2s,color .2s}
+  @media (prefers-reduced-motion:reduce){body,header.top,.card,.slot,.pill,.pg,input,.steps li,.bk{transition:none}}
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -31,11 +43,26 @@
   .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
   .logo{width:32px;height:32px;border-radius:9px;background:var(--brand);display:grid;place-items:center}
   .logo svg{width:18px;height:18px}
-  .top .note{color:var(--muted);font-size:.9rem}
+  .nav-links{display:flex;gap:4px}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:.92rem;font-weight:600;padding:8px 12px;border-radius:10px}
+  .nav-links a:hover{color:var(--ink);background:var(--surface-2)}
+  h2{scroll-margin-top:84px}
+  .top-right{display:flex;align-items:center;gap:14px}
+  .theme-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:grid;place-items:center}
+  .theme-btn:hover{border-color:var(--brand);background:var(--brand-soft)}
+  .theme-btn svg{width:20px;height:20px}
+  header.top{position:sticky;top:0;z-index:30}
   .brand{white-space:nowrap}
-  @media (max-width:560px){.top .note{display:none}.wrap{padding:0 16px}.card{padding:16px}}
+  @media (max-width:560px){.nav-links a:first-child{display:none}.top-right{gap:6px}.wrap{padding:0 16px}.card{padding:16px}}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
-  .hero{padding:36px 0 8px}
+  body{background-image:radial-gradient(760px 280px at 88% -40px,var(--brand-soft),transparent 72%);background-repeat:no-repeat}
+  header.top{backdrop-filter:saturate(1.4) blur(8px);background:color-mix(in srgb,var(--surface) 88%,transparent)}
+  .hero{padding:44px 0 10px}
+  .hero h1{font-weight:750}
+  .steps li{box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  .steps li.on{box-shadow:0 0 0 3px var(--brand-soft)}
   .hero h1{font-size:clamp(1.6rem,3.2vw,2.2rem);line-height:1.15;margin:0 0 8px;letter-spacing:-.02em}
   .hero p{margin:0;color:var(--muted);max-width:56ch}
   .steps{display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0;margin:20px 0 0}
@@ -68,11 +95,17 @@
   .pg[aria-current="page"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:700}
   .pg:disabled{opacity:.45;cursor:not-allowed}
   .day h3{margin:0 0 8px;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
-  .times{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
-  .slot{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;transition:border-color .12s,background .12s,transform .12s}
-  .slot strong{font-size:1rem;font-variant-numeric:tabular-nums}
-  .slot span{font-size:.82rem;color:var(--muted)}
-  .slot:hover:not(:disabled){border-color:var(--brand);background:var(--brand-soft)}
+  .times{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:8px}
+  .slot{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;transition:border-color .12s,background .12s,transform .12s,box-shadow .12s}
+  .slot .tx{display:flex;flex-direction:column;min-width:0}
+  .slot strong{font-size:1rem;font-variant-numeric:tabular-nums;line-height:1.25}
+  .slot .tx span{font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .av{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.72rem;font-weight:700;letter-spacing:.02em;
+    background:hsl(var(--h) 55% 88%);color:hsl(var(--h) 60% 26%)}
+  @supports (color:light-dark(red,blue)){.av{background:light-dark(hsl(var(--h) 55% 88%),hsl(var(--h) 38% 24%));color:light-dark(hsl(var(--h) 60% 26%),hsl(var(--h) 70% 82%))}}
+  .slot:disabled .av{filter:grayscale(1);opacity:.7}
+  .slot:hover:not(:disabled){border-color:var(--brand);background:var(--brand-soft);transform:translateY(-1px);box-shadow:var(--shadow)}
+  .slot:active:not(:disabled){transform:translateY(0)}
   .slot[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft);box-shadow:inset 0 0 0 1px var(--brand)}
   .slot:disabled{cursor:not-allowed;opacity:.55;background:var(--surface-2)}
   .slot:disabled strong{text-decoration:line-through}
@@ -84,6 +117,8 @@
   .err{color:var(--bad);font-size:.84rem;margin-top:5px;min-height:1.2em}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border:1px solid transparent;border-radius:10px;background:var(--brand);color:var(--brand-ink);font-weight:600;cursor:pointer;transition:background .12s}
   .btn:hover:not(:disabled){background:var(--brand-strong);color:#fff}
+  .btn:active:not(:disabled){transform:translateY(1px)}
+  .btn:not(.ghost):not(.danger){box-shadow:0 1px 2px rgba(15,118,110,.25)}
   .btn:disabled{opacity:.55;cursor:default}
   .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
   .btn.ghost:hover:not(:disabled){background:var(--surface-2);color:var(--ink)}
@@ -139,7 +174,10 @@
 <header class="top">
   <div class="wrap">
     <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></span>Clinic Booking</div>
-    <span class="note">Free to book · confirmed instantly</span>
+    <div class="top-right">
+      <nav class="nav-links" aria-label="Page sections"><a href="#slotsTitle">Book a time</a><a href="#mineTitle">My bookings</a></nav>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark mode" title="Switch theme"></button>
+    </div>
   </div>
 </header>
 
@@ -216,6 +254,8 @@ function toast(text, kind) {
   const t = document.createElement('div'); t.className = 'toast ' + (kind || ''); t.textContent = text;
   $('toasts').appendChild(t); setTimeout(() => t.remove(), 5000);
 }
+const initials = (n) => esc(n.replace(/^Dr\.?\s*/i, '').trim().slice(0, 2).toUpperCase());
+const hue = (n) => [...n].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
 const day = (s) => new Date(s).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
 const time = (s) => new Date(s).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 const when = (s) => day(s.start) + ' at ' + time(s.start);
@@ -247,7 +287,8 @@ function renderSlots() {
   $('slots').innerHTML = Object.entries(groups).map(([d, items]) =>
     `<div class="day"><h3>${esc(d)}</h3><div class="times">${items.map((s) =>
       `<button type="button" class="slot" data-id="${esc(s.id)}" ${s.available ? '' : 'disabled'} aria-pressed="${!!chosen && chosen.id === s.id}">
-        <strong>${time(s.start)}</strong><span>${esc(s.provider)}${s.available ? '' : ' · Booked'}</span></button>`).join('')}</div></div>`).join('');
+        <i class="av" style="--h:${hue(s.provider)}" aria-hidden="true">${initials(s.provider)}</i>
+        <div class="tx"><strong>${time(s.start)}</strong><span>${esc(s.provider)}${s.available ? '' : ' · Booked'}</span></div></button>`).join('')}</div></div>`).join('');
 }
 function renderPager(pages, total) {
   if (pages < 2) { $('pager').innerHTML = ''; return; }
@@ -381,6 +422,25 @@ async function refreshVisit() {  // statuses may have changed since the page was
   await Promise.all(visit.map(async (v) => { const r = await api('GET', '/bookings/' + v.id); if (r.ok) Object.assign(v, r.j); }));
   saveVisit(); renderVisit();
 }
+
+/* ---------- light / dark toggle ---------- */
+const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+function currentTheme() { return document.documentElement.getAttribute('data-theme') || (darkQuery.matches ? 'dark' : 'light'); }
+function paintToggle() {
+  const dark = currentTheme() === 'dark';
+  $('themeBtn').innerHTML = dark ? SUN : MOON;
+  $('themeBtn').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+}
+$('themeBtn').onclick = () => {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('theme', next); } catch {}
+  paintToggle();
+};
+darkQuery.addEventListener('change', () => { if (!document.documentElement.getAttribute('data-theme')) paintToggle(); });
+paintToggle();
 
 renderSide();
 renderVisit();
