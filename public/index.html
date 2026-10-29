@@ -168,6 +168,68 @@
   footer code{background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:.84rem}
   [hidden]{display:none!important}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  /* ---- phone layout: day strip, doctor chips, sticky bar, full-screen steps. Desktop is unchanged. ---- */
+  .days,.mbar,.m-only,.on-m,.mstep,.cwrap{display:none}
+  @media (max-width:640px){
+    .on-d{display:none}.on-m{display:inline}
+    .mstep{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);background:var(--brand-soft);padding:4px 10px;border-radius:999px}
+    .m-top.m-only{display:flex;align-items:center;gap:12px;height:64px}
+    .m-top span{font-size:14px;font-weight:600;color:var(--muted)}
+    .icon-btn{width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer}
+    body{padding-bottom:110px}
+    .hero{padding:8px 0 10px}
+    .hero p,.steps{display:none}
+    .hero h1{font-size:30px;line-height:1.08;margin:10px 0 0}
+    .grid{display:block;margin:6px 0 16px}
+    #slotsCard{background:transparent;border:0;box-shadow:none;padding:0}
+    #slotsCard .card-head{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
+    .days{display:flex;gap:8px;overflow-x:auto;padding:6px 0 14px;scrollbar-width:none}
+    .days::-webkit-scrollbar{display:none}
+    .dchip{flex:none;width:62px;height:76px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;cursor:pointer}
+    .dchip small{font-size:12px;font-weight:600;color:var(--muted)}
+    .dchip b{font-size:21px;line-height:1.1}
+    .dchip i{font-style:normal;font-size:11px;color:var(--muted)}
+    .dchip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+    .dchip[aria-pressed="true"] small,.dchip[aria-pressed="true"] i{color:var(--brand-ink);opacity:.85}
+    #pills{flex-wrap:nowrap;overflow-x:auto;margin:0 0 14px;padding-bottom:2px;scrollbar-width:none}
+    #pills::-webkit-scrollbar{display:none}
+    .pill{flex:none;height:40px;padding:0 15px;font-weight:600}
+    .pill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+    .day{margin:0 0 14px}
+    .day h3{padding:2px 0 8px;margin:0}
+    .times{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .slot{height:60px;border-radius:16px;padding:0 12px}
+    .slot:hover:not(:disabled){transform:none;box-shadow:none}
+    .slot[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);box-shadow:none}
+    .slot[aria-pressed="true"] .tx span{color:var(--brand-ink);opacity:.85}
+    .slot[aria-pressed="true"] .av{background:rgba(255,255,255,.22);color:var(--brand-ink)}
+    .slot:disabled{background:transparent;border-style:dashed;opacity:1}
+    .slot:disabled strong{color:var(--muted)}
+    .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:35;align-items:center;gap:12px;padding:14px 16px 26px;background:var(--surface);border-top:1px solid var(--line)}
+    .mbar .sum{flex:1;min-width:0}
+    .mbar .sum b{display:block}
+    .mbar .sum span{font-size:13px;color:var(--muted)}
+    .go{height:52px;padding:0 22px;border-radius:16px;border:0;background:var(--brand);color:var(--brand-ink);font-weight:700;display:flex;align-items:center;gap:8px;cursor:pointer}
+    .go:disabled{opacity:.45;cursor:default}
+    body.m-step .mbar{display:none}
+    #side{display:none}
+    body.m-step{overflow:hidden}
+    body.m-step #side{display:block;position:fixed;inset:0;z-index:40;margin:0;border:0;border-radius:0;box-shadow:none;background:var(--bg);overflow-y:auto;padding:0 20px 160px}
+    #side h2{font-size:30px;line-height:1.08;margin:10px 0 18px!important;letter-spacing:-.02em}
+    #side .summary{border-radius:18px;padding:14px;margin:0 0 22px}
+    #side label{font-size:14px;font-weight:700}
+    #side input{height:52px;border-radius:14px;font-size:16px;padding:0 16px;border-width:1.5px}
+    #back{display:none}
+    body.m-step #side .actions{position:fixed;left:0;right:0;bottom:0;margin:0;padding:14px 20px 26px;background:var(--surface);border-top:1px solid var(--line);flex-direction:column;z-index:3}
+    body.m-step #side .actions .btn{width:100%;height:54px;border-radius:16px;font-size:16px;font-weight:700}
+    .cwrap.m-only{display:block}
+    .success{padding-top:30px}
+    .success .tick{width:72px;height:72px;background:var(--brand);color:var(--brand-ink);box-shadow:0 0 0 10px var(--brand-soft);margin:18px auto 26px}
+    .success h2{font-size:32px;margin-bottom:6px!important}
+    .ref{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px}
+    #toasts{bottom:96px;left:16px;right:16px}
+  }
 </style>
 </head>
 <body>
@@ -183,7 +245,8 @@
 
 <main class="wrap">
   <section class="hero">
-    <h1>Book your appointment</h1>
+    <span class="mstep">Step 1 of 3</span>
+    <h1><span class="on-d">Book your appointment</span><span class="on-m">Pick a day and time</span></h1>
     <p>Choose a time that suits you, tell us who it's for, and you'll get a confirmation straight away.</p>
     <ol class="steps" aria-label="Progress">
       <li id="st1" class="on"><b>1</b>Choose a time</li>
@@ -193,11 +256,12 @@
   </section>
 
   <div class="grid">
-    <section class="card" aria-labelledby="slotsTitle">
+    <section class="card" id="slotsCard" aria-labelledby="slotsTitle">
       <div class="card-head">
         <h2 id="slotsTitle">Available times</h2>
         <button class="btn ghost sm" id="refresh" type="button">Refresh</button>
       </div>
+      <div class="days" id="days" role="group" aria-label="Choose a day"></div>
       <div class="pills" id="pills" role="group" aria-label="Filter by provider"></div>
       <div id="slots" aria-live="polite"></div>
       <div id="pager"></div>
@@ -228,6 +292,10 @@
 <footer>
   <div class="wrap">Developers: the REST API behind this page needs an <code>X-API-Key</code> header. See <code>GET /slots</code>, <code>POST /bookings</code>, <code>GET /bookings?email=</code>, <code>DELETE /bookings/:id</code>.</div>
 </footer>
+<div class="mbar" id="mbar">
+  <div class="sum"><b id="barMain">Choose a time</b><span id="barSub">Tap a time to continue</span></div>
+  <button class="go" id="barGo" type="button" disabled>Continue <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+</div>
 <div id="toasts" role="status"></div>
 
 <script>
@@ -240,7 +308,9 @@ const ICON = {
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
 
 const PAGE_SIZE = 12;
-let allSlots = [], slotById = {}, provider = '', page = 1, chosen = null, idem = null, busy = false;
+const mobileQ = matchMedia('(max-width: 640px)');
+const isMobile = () => mobileQ.matches;
+let allSlots = [], slotById = {}, provider = '', page = 1, selDay = null, chosen = null, idem = null, busy = false;
 let mineEmail = '', mineCursor = null;
 
 async function api(method, path, body, headers = {}) {
@@ -273,9 +343,16 @@ async function loadSlots() {
 }
 function renderPills() {
   const names = [...new Set(allSlots.map((s) => s.provider))];
-  $('pills').innerHTML = ['', ...names].map((n) => `<button type="button" class="pill" data-p="${esc(n)}" aria-pressed="${n === provider}">${n ? esc(n) : 'All providers'}</button>`).join('');
+  const all = isMobile() ? 'All doctors' : 'All providers';
+  $('pills').innerHTML = ['', ...names].map((n) => `<button type="button" class="pill" data-p="${esc(n)}" aria-pressed="${n === provider}">${n ? esc(n) : all}</button>`).join('');
 }
+const slotButton = (s) =>
+  `<button type="button" class="slot" data-id="${esc(s.id)}" ${s.available ? '' : 'disabled'} aria-pressed="${!!chosen && chosen.id === s.id}">
+    <i class="av" style="--h:${hue(s.provider)}" aria-hidden="true">${initials(s.provider)}</i>
+    <div class="tx"><strong>${time(s.start)}</strong><span>${s.available ? esc(s.provider) : isMobile() ? 'Booked' : esc(s.provider) + ' · Booked'}</span></div></button>`;
 function renderSlots() {
+  if (isMobile()) return renderSlotsMobile();
+  $('days').innerHTML = '';
   const all = allSlots.filter((s) => !provider || s.provider === provider);
   if (!all.length) { $('slots').innerHTML = '<div class="empty"><b>No times available</b>Please check back soon.</div>'; $('pager').innerHTML = ''; return; }
   const pages = Math.ceil(all.length / PAGE_SIZE);
@@ -285,11 +362,44 @@ function renderSlots() {
   const groups = {};
   list.forEach((s) => { (groups[day(s.start)] ||= []).push(s); });
   $('slots').innerHTML = Object.entries(groups).map(([d, items]) =>
-    `<div class="day"><h3>${esc(d)}</h3><div class="times">${items.map((s) =>
-      `<button type="button" class="slot" data-id="${esc(s.id)}" ${s.available ? '' : 'disabled'} aria-pressed="${!!chosen && chosen.id === s.id}">
-        <i class="av" style="--h:${hue(s.provider)}" aria-hidden="true">${initials(s.provider)}</i>
-        <div class="tx"><strong>${time(s.start)}</strong><span>${esc(s.provider)}${s.available ? '' : ' · Booked'}</span></div></button>`).join('')}</div></div>`).join('');
+    `<div class="day"><h3>${esc(d)}</h3><div class="times">${items.map(slotButton).join('')}</div></div>`).join('');
 }
+
+/* ---------- phone layout: one day at a time, Morning / Afternoon, sticky bar ---------- */
+const dkey = (s) => new Date(s.start).toDateString();
+function renderSlotsMobile() {
+  $('pager').innerHTML = '';
+  if (!allSlots.length) { $('days').innerHTML = ''; $('slots').innerHTML = '<div class="empty"><b>No times available</b>Please check back soon.</div>'; renderBar(); return; }
+  const pool = allSlots.filter((s) => !provider || s.provider === provider);
+  const keys = [...new Set(allSlots.map(dkey))];
+  const open = (k) => pool.filter((s) => dkey(s) === k && s.available).length;
+  if (!selDay || !keys.includes(selDay)) selDay = keys.find((k) => open(k) > 0) || keys[0];
+  $('days').innerHTML = keys.map((k) => {
+    const d = new Date(k), n = open(k);
+    return `<button type="button" class="dchip" data-k="${esc(k)}" aria-pressed="${k === selDay}"><small>${d.toLocaleDateString([], { weekday: 'short' })}</small><b>${d.getDate()}</b><i>${n} ${n === 1 ? 'time' : 'times'}</i></button>`;
+  }).join('');
+  const list = pool.filter((s) => dkey(s) === selDay);
+  if (!list.length) { $('slots').innerHTML = '<div class="empty"><b>No times this day</b>Try another day or doctor.</div>'; renderBar(); return; }
+  const parts = [['Morning', list.filter((s) => new Date(s.start).getHours() < 12)], ['Afternoon', list.filter((s) => new Date(s.start).getHours() >= 12)]];
+  $('slots').innerHTML = parts.filter(([, a]) => a.length).map(([label, items]) =>
+    `<div class="day"><h3>${label}</h3><div class="times">${items.map(slotButton).join('')}</div></div>`).join('');
+  renderBar();
+}
+function renderBar() {
+  const s = chosen;
+  $('barMain').textContent = s ? new Date(s.start).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }) + ', ' + time(s.start) : 'Choose a time';
+  $('barSub').textContent = s ? s.provider + ' · 30 minutes' : 'Tap a time to continue';
+  $('barGo').disabled = !s;
+}
+function openStep() { document.body.classList.add('m-step'); $('side').scrollTop = 0; const n = $('name'); if (n) n.focus(); }
+function closeStep() { document.body.classList.remove('m-step'); }
+$('days').onclick = (e) => { const b = e.target.closest('.dchip'); if (!b) return; selDay = b.dataset.k; renderSlots(); };
+$('barGo').onclick = () => { if (chosen) openStep(); };
+$('side').onclick = (e) => {
+  if (e.target.closest('#mback')) return closeStep();
+  if (e.target.closest('[data-cancel]')) cancelClick(e);
+};
+mobileQ.addEventListener('change', () => { closeStep(); renderPills(); renderSlots(); });
 function renderPager(pages, total) {
   if (pages < 2) { $('pager').innerHTML = ''; return; }
   const nums = [...new Set([1, page - 1, page, page + 1, pages])].filter((n) => n >= 1 && n <= pages).sort((a, b) => a - b);
@@ -314,6 +424,7 @@ $('pills').onclick = (e) => { const b = e.target.closest('.pill'); if (!b) retur
 $('slots').onclick = (e) => {
   const b = e.target.closest('.slot'); if (!b || b.disabled) return;
   chosen = slotById[b.dataset.id]; idem = crypto.randomUUID(); renderSlots(); renderSide();
+  if (isMobile()) return;  // on a phone the bar at the bottom carries the choice; Continue opens the details
   if (window.innerWidth <= 860) $('side').scrollIntoView({ behavior: 'smooth', block: 'start' });
   const n = $('name'); if (n) n.focus({ preventScroll: true });
 };
@@ -322,12 +433,15 @@ $('refresh').onclick = loadSlots;
 /* ---------- side panel: empty -> form -> confirmation ---------- */
 function renderSide() {
   step(chosen ? 2 : 1);
+  renderBar();
   if (!chosen) {
     $('side').innerHTML = `<div class="empty"><div>${ICON.cal.replace('width="22" height="22"', 'width="44" height="44"')}</div><b>Pick a time to get started</b>Select an available slot and we'll ask for your details.</div>`;
     return;
   }
   $('side').innerHTML = `
-    <h2 style="margin-bottom:12px">Your details</h2>
+    <div class="m-top m-only"><button type="button" id="mback" class="icon-btn" aria-label="Back to times"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span>Back to times</span></div>
+    <span class="mstep m-only">Step 2 of 3</span>
+    <h2 style="margin-bottom:12px"><span class="on-d">Your details</span><span class="on-m">Who is this for?</span></h2>
     <div class="summary"><span class="ico">${ICON.cal}</span><div><b>${esc(when(chosen))}</b><small>${esc(chosen.provider)} · 30 minutes</small></div></div>
     <form id="form" novalidate>
       <label for="name">Full name</label>
@@ -342,7 +456,7 @@ function renderSide() {
       </div>
       <div class="err" id="formErr" role="alert" style="margin-top:10px"></div>
     </form>`;
-  $('back').onclick = () => { chosen = null; renderSlots(); renderSide(); };
+  $('back').onclick = () => { chosen = null; closeStep(); renderSlots(); renderSide(); };
   $('form').onsubmit = submitBooking;
   $('name').onblur = () => check('name'); $('email').onblur = () => check('email');
 }
@@ -361,18 +475,20 @@ async function submitBooking(e) {
   busy = false;
   if (r.status === 201) { visit.push(r.j); saveVisit(); renderVisit(); showConfirmation(r.j); loadSlots(); $('lookup').value = r.j.email; findBookings(false); return; }
   $('book').disabled = false; $('book').textContent = 'Confirm booking';
-  if (r.status === 409) { $('formErr').textContent = 'Sorry, someone just booked that time. Please choose another.'; idem = crypto.randomUUID(); chosen = null; loadSlots().then(renderSide); toast('That time was just taken', 'bad'); return; }
+  if (r.status === 409) { $('formErr').textContent = 'Sorry, someone just booked that time. Please choose another.'; idem = crypto.randomUUID(); chosen = null; closeStep(); loadSlots().then(renderSide); toast('That time was just taken', 'bad'); return; }
   idem = crypto.randomUUID();
   $('formErr').textContent = r.status === 429 ? `Too many attempts with this email. Please try again in ${r.retry || 60} seconds.` : (r.j.error || 'Something went wrong. Please try again.');
 }
 function showConfirmation(b) {
   const s = slotById[b.slot_id]; step(3); chosen = null;
   $('side').innerHTML = `<div class="success">
+    <span class="mstep m-only">Step 3 of 3</span>
     <div class="tick">${ICON.tick}</div><h2>You're booked</h2>
     <p style="color:var(--muted);margin:0">${s ? esc(when(s)) + ' with ' + esc(s.provider) : 'Your appointment is confirmed.'}</p>
     <dl class="ref"><dt>Booking reference</dt><dd>${esc(b.id)}</dd><dt>Name</dt><dd>${esc(b.name)}</dd><dt>Email</dt><dd>${esc(b.email)}</dd></dl>
-    <div class="actions" style="justify-content:center"><button class="btn" id="another" type="button">Book another</button></div></div>`;
-  $('another').onclick = () => { renderSide(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    <div class="actions" style="justify-content:center"><button class="btn" id="another" type="button">Book another</button>
+      <div class="cwrap m-only" data-id="${esc(b.id)}"><button class="btn danger" data-cancel type="button">Cancel this booking</button></div></div></div>`;
+  $('another').onclick = () => { renderSide(); closeStep(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   toast('Booking confirmed', 'good');
 }
 
@@ -400,9 +516,10 @@ async function cancelClick(e) {
   const b = e.target.closest('[data-cancel]'); if (!b) return;
   if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'Confirm cancel?'; setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = 'Cancel'; } }, 4000); return; }
   b.disabled = true; b.textContent = 'Cancelling…';
-  const id = b.closest('.bk').dataset.id;
+  const id = b.closest('[data-id]').dataset.id, inSide = !!b.closest('#side');
   const r = await api('DELETE', '/bookings/' + id);
   if (r.ok) {
+    if (inSide) { renderSide(); closeStep(); }
     visit.forEach((v) => { if (v.id === id) v.status = 'cancelled'; }); saveVisit(); renderVisit();
     toast('Booking cancelled', 'good'); loadSlots(); if ($('lookup').value.trim()) findBookings(false);
   } else { b.disabled = false; b.textContent = 'Cancel'; toast(r.j.error || 'Could not cancel', 'bad'); }
