@@ -241,11 +241,20 @@
     #books .bk > div{min-width:0}
     #books .bk .btn{flex:none}
     #books .ref-id{display:none}
+    #books .bk small{word-break:normal;overflow-wrap:anywhere;line-height:1.55}
+    #books .dot{display:none}
+    #books .em{display:block}
     #books .bk .btn{height:40px;border-radius:12px;font-weight:700}
     #books .search{flex-direction:column;flex-wrap:nowrap}
     #books .search input{flex:none;width:100%}
     #books .search .btn{width:100%;height:52px;border-radius:16px;font-size:16px;font-weight:700}
     #toasts{bottom:96px;left:16px;right:16px;z-index:60}
+  }
+  /* very small phones: the Cancel button gets its own full-width row so the text keeps the whole card width */
+  @media (max-width:380px){
+    #books .bk{flex-wrap:wrap}
+    #books .bk > div{flex:1 1 100%}
+    #books .bk .btn{flex:1 1 100%;width:100%;height:44px}
   }
 </style>
 </head>
@@ -290,12 +299,6 @@
   <div id="books">
   <div class="m-top m-only"><button type="button" id="booksBack" class="icon-btn" aria-label="Back to times"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span>Back to times</span></div>
   <h1 class="mbooks-title m-only">My bookings</h1>
-  <section class="card" id="visit" aria-labelledby="visitTitle" style="margin-bottom:20px" hidden>
-    <div class="card-head"><h2 id="visitTitle">Booked in this visit</h2></div>
-    <p class="hint">Every booking you make on this page appears here, whichever email you use.</p>
-    <div class="list" id="visitList"></div>
-  </section>
-
   <section class="card" aria-labelledby="mineTitle" style="margin-bottom:20px">
     <div class="card-head"><h2 id="mineTitle">Find or cancel a booking</h2></div>
     <form class="search" id="searchForm" novalidate>
@@ -498,7 +501,7 @@ async function submitBooking(e) {
   busy = true; $('book').disabled = true; $('book').textContent = 'Booking…';
   const r = await api('POST', '/bookings', { slot_id: chosen.id, name: $('name').value, email: $('email').value }, { 'Idempotency-Key': idem });
   busy = false;
-  if (r.status === 201) { visit.push(r.j); saveVisit(); renderVisit(); showConfirmation(r.j); loadSlots(); $('lookup').value = r.j.email; findBookings(false); return; }
+  if (r.status === 201) { showConfirmation(r.j); loadSlots(); $('lookup').value = r.j.email; findBookings(false); return; }
   $('book').disabled = false; $('book').textContent = 'Confirm booking';
   if (r.status === 409) { $('formErr').textContent = 'Sorry, someone just booked that time. Please choose another.'; idem = crypto.randomUUID(); chosen = null; closeStep(); loadSlots().then(renderSide); toast('That time was just taken', 'bad'); return; }
   idem = crypto.randomUUID();
@@ -521,7 +524,7 @@ function showConfirmation(b) {
 function bookingRow(b) {
   const s = slotById[b.slot_id];
   return `<div class="bk" data-id="${esc(b.id)}"><div><b>${s ? esc(when(s)) : 'Slot ' + esc(b.slot_id)}<span class="badge ${esc(b.status)}">${esc(b.status)}</span></b>
-    <small>${s ? esc(s.provider) + ' · ' : ''}${esc(b.name)} · ${esc(b.email)}<span class="ref-id"> · Ref ${esc(b.id)}</span></small></div>
+    <small>${s ? esc(s.provider) + ' · ' : ''}${esc(b.name)}<span class="dot"> · </span><span class="em">${esc(b.email)}</span><span class="ref-id"> · Ref ${esc(b.id)}</span></small></div>
     ${b.status === 'confirmed' ? '<button class="btn danger sm" data-cancel type="button">Cancel</button>' : ''}</div>`;
 }
 async function findBookings(more) {
@@ -545,25 +548,11 @@ async function cancelClick(e) {
   const r = await api('DELETE', '/bookings/' + id);
   if (r.ok) {
     if (inSide) { renderSide(); closeStep(); }
-    visit.forEach((v) => { if (v.id === id) v.status = 'cancelled'; }); saveVisit(); renderVisit();
     toast('Booking cancelled', 'good'); loadSlots(); if ($('lookup').value.trim()) findBookings(false);
   } else { b.disabled = false; b.textContent = 'Cancel'; toast(r.j.error || 'Could not cancel', 'bad'); }
 }
 $('mine').onclick = cancelClick;
-$('visitList').onclick = cancelClick;
-
-/* ---------- booked in this visit: every booking made on this page, whatever the email ---------- */
-let visit = [];
-try { visit = JSON.parse(sessionStorage.getItem('visit') || '[]'); } catch { visit = []; }
-function saveVisit() { try { sessionStorage.setItem('visit', JSON.stringify(visit)); } catch {} }
-function renderVisit() {
-  $('visit').hidden = !visit.length;
-  $('visitList').innerHTML = visit.map(bookingRow).join('');
-}
-async function refreshVisit() {  // statuses may have changed since the page was last open
-  await Promise.all(visit.map(async (v) => { const r = await api('GET', '/bookings/' + v.id); if (r.ok) Object.assign(v, r.j); }));
-  saveVisit(); renderVisit();
-}
+try { sessionStorage.removeItem('visit'); } catch {}  // an earlier version kept a list of this visit's bookings here; nothing is stored now
 
 /* ---------- light / dark toggle ---------- */
 const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
@@ -585,8 +574,7 @@ darkQuery.addEventListener('change', () => { if (!document.documentElement.getAt
 paintToggle();
 
 renderSide();
-renderVisit();
-loadSlots().then(refreshVisit);
+loadSlots();
 </script>
 </body>
 </html>
