@@ -59,6 +59,14 @@
   .pill[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:600}
 
   .day{margin-top:18px}
+  #pager{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);display:grid;gap:10px;justify-items:center}
+  #pager .count{margin:0;color:var(--muted);font-size:.88rem}
+  .pages{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center}
+  .pages .gap{color:var(--muted);padding:0 2px}
+  .pg{min-width:40px;height:40px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+  .pg:hover:not(:disabled){border-color:var(--brand);background:var(--brand-soft)}
+  .pg[aria-current="page"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:700}
+  .pg:disabled{opacity:.45;cursor:not-allowed}
   .day h3{margin:0 0 8px;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
   .times{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
   .slot{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;transition:border-color .12s,background .12s,transform .12s}
@@ -153,6 +161,7 @@
       </div>
       <div class="pills" id="pills" role="group" aria-label="Filter by provider"></div>
       <div id="slots" aria-live="polite"></div>
+      <div id="pager"></div>
     </section>
 
     <aside class="card side" id="side" aria-live="polite"></aside>
@@ -185,7 +194,8 @@ const ICON = {
 };
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
 
-let allSlots = [], slotById = {}, provider = '', chosen = null, idem = null, busy = false;
+const PAGE_SIZE = 12;
+let allSlots = [], slotById = {}, provider = '', page = 1, chosen = null, idem = null, busy = false;
 let mineEmail = '', mineCursor = null;
 
 async function api(method, path, body, headers = {}) {
@@ -219,8 +229,12 @@ function renderPills() {
   $('pills').innerHTML = ['', ...names].map((n) => `<button type="button" class="pill" data-p="${esc(n)}" aria-pressed="${n === provider}">${n ? esc(n) : 'All providers'}</button>`).join('');
 }
 function renderSlots() {
-  const list = allSlots.filter((s) => !provider || s.provider === provider);
-  if (!list.length) { $('slots').innerHTML = '<div class="empty"><b>No times available</b>Please check back soon.</div>'; return; }
+  const all = allSlots.filter((s) => !provider || s.provider === provider);
+  if (!all.length) { $('slots').innerHTML = '<div class="empty"><b>No times available</b>Please check back soon.</div>'; $('pager').innerHTML = ''; return; }
+  const pages = Math.ceil(all.length / PAGE_SIZE);
+  page = Math.min(Math.max(page, 1), pages);
+  const list = all.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  renderPager(pages, all.length);
   const groups = {};
   list.forEach((s) => { (groups[day(s.start)] ||= []).push(s); });
   $('slots').innerHTML = Object.entries(groups).map(([d, items]) =>
@@ -228,7 +242,27 @@ function renderSlots() {
       `<button type="button" class="slot" data-id="${esc(s.id)}" ${s.available ? '' : 'disabled'} aria-pressed="${!!chosen && chosen.id === s.id}">
         <strong>${time(s.start)}</strong><span>${esc(s.provider)}${s.available ? '' : ' · Booked'}</span></button>`).join('')}</div></div>`).join('');
 }
-$('pills').onclick = (e) => { const b = e.target.closest('.pill'); if (!b) return; provider = b.dataset.p; renderPills(); renderSlots(); };
+function renderPager(pages, total) {
+  if (pages < 2) { $('pager').innerHTML = ''; return; }
+  const nums = [...new Set([1, page - 1, page, page + 1, pages])].filter((n) => n >= 1 && n <= pages).sort((a, b) => a - b);
+  let last = 0, buttons = '';
+  nums.forEach((n) => {
+    if (n - last > 1) buttons += '<span class="gap" aria-hidden="true">…</span>';
+    buttons += `<button type="button" class="pg" data-page="${n}" ${n === page ? 'aria-current="page"' : ''} aria-label="Page ${n}">${n}</button>`;
+    last = n;
+  });
+  const from = (page - 1) * PAGE_SIZE + 1, to = Math.min(page * PAGE_SIZE, total);
+  $('pager').innerHTML = `<p class="count">Showing ${from}–${to} of ${total} times</p>
+    <nav class="pages" aria-label="Pages of times">
+      <button type="button" class="pg" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>${buttons}
+      <button type="button" class="pg" data-page="${page + 1}" ${page === pages ? 'disabled' : ''}>Next</button></nav>`;
+}
+$('pager').onclick = (e) => {
+  const b = e.target.closest('.pg'); if (!b || b.disabled) return;
+  page = Number(b.dataset.page); renderSlots();
+  $('slotsTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+$('pills').onclick = (e) => { const b = e.target.closest('.pill'); if (!b) return; provider = b.dataset.p; page = 1; renderPills(); renderSlots(); };
 $('slots').onclick = (e) => {
   const b = e.target.closest('.slot'); if (!b || b.disabled) return;
   chosen = slotById[b.dataset.id]; idem = crypto.randomUUID(); renderSlots(); renderSide();
