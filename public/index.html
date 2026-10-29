@@ -228,7 +228,24 @@
     .success .tick{width:72px;height:72px;background:var(--brand);color:var(--brand-ink);box-shadow:0 0 0 10px var(--brand-soft);margin:18px auto 26px}
     .success h2{font-size:32px;margin-bottom:6px!important}
     .ref{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px}
-    #toasts{bottom:96px;left:16px;right:16px}
+    #books{display:none}
+    body.m-books{overflow:hidden}
+    body.m-books #books{display:block;position:fixed;inset:0;z-index:45;overflow-y:auto;background:var(--bg);padding:0 20px 40px}
+    body.m-books .mbar{display:none}
+    .mbooks-title.m-only{display:block;margin:2px 0 14px;font-size:30px;line-height:1.08;letter-spacing:-.02em;font-weight:750}
+    #books .card{background:transparent;border:0;box-shadow:none;padding:0;margin-bottom:18px!important}
+    #books .card h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    #books .card-head{margin-bottom:8px}
+    #books .hint{display:none}
+    #books .bk{border-radius:18px;background:var(--surface);padding:14px;flex-wrap:nowrap}
+    #books .bk > div{min-width:0}
+    #books .bk .btn{flex:none}
+    #books .ref-id{display:none}
+    #books .bk .btn{height:40px;border-radius:12px;font-weight:700}
+    #books .search{flex-direction:column;flex-wrap:nowrap}
+    #books .search input{flex:none;width:100%}
+    #books .search .btn{width:100%;height:52px;border-radius:16px;font-size:16px;font-weight:700}
+    #toasts{bottom:96px;left:16px;right:16px;z-index:60}
   }
 </style>
 </head>
@@ -270,6 +287,9 @@
     <aside class="card side" id="side" aria-live="polite"></aside>
   </div>
 
+  <div id="books">
+  <div class="m-top m-only"><button type="button" id="booksBack" class="icon-btn" aria-label="Back to times"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span>Back to times</span></div>
+  <h1 class="mbooks-title m-only">My bookings</h1>
   <section class="card" id="visit" aria-labelledby="visitTitle" style="margin-bottom:20px" hidden>
     <div class="card-head"><h2 id="visitTitle">Booked in this visit</h2></div>
     <p class="hint">Every booking you make on this page appears here, whichever email you use.</p>
@@ -287,6 +307,7 @@
     <div class="list" id="mine"></div>
     <div class="actions"><button class="btn ghost sm" id="more" type="button" hidden>Load more</button></div>
   </section>
+  </div>
 </main>
 
 <footer>
@@ -393,13 +414,17 @@ function renderBar() {
 }
 function openStep() { document.body.classList.add('m-step'); $('side').scrollTop = 0; const n = $('name'); if (n) n.focus(); }
 function closeStep() { document.body.classList.remove('m-step'); }
+function openBooks() { document.body.classList.add('m-books'); $('books').scrollTop = 0; }
+function closeBooks() { document.body.classList.remove('m-books'); }
+$('booksBack').onclick = closeBooks;
+document.querySelector('.nav-links a[href="#mineTitle"]').addEventListener('click', (e) => { if (isMobile()) { e.preventDefault(); openBooks(); } });
 $('days').onclick = (e) => { const b = e.target.closest('.dchip'); if (!b) return; selDay = b.dataset.k; renderSlots(); };
 $('barGo').onclick = () => { if (chosen) openStep(); };
 $('side').onclick = (e) => {
   if (e.target.closest('#mback')) return closeStep();
   if (e.target.closest('[data-cancel]')) cancelClick(e);
 };
-mobileQ.addEventListener('change', () => { closeStep(); renderPills(); renderSlots(); });
+mobileQ.addEventListener('change', () => { closeStep(); closeBooks(); renderPills(); renderSlots(); });
 function renderPager(pages, total) {
   if (pages < 2) { $('pager').innerHTML = ''; return; }
   const nums = [...new Set([1, page - 1, page, page + 1, pages])].filter((n) => n >= 1 && n <= pages).sort((a, b) => a - b);
@@ -496,7 +521,7 @@ function showConfirmation(b) {
 function bookingRow(b) {
   const s = slotById[b.slot_id];
   return `<div class="bk" data-id="${esc(b.id)}"><div><b>${s ? esc(when(s)) : 'Slot ' + esc(b.slot_id)}<span class="badge ${esc(b.status)}">${esc(b.status)}</span></b>
-    <small>${s ? esc(s.provider) + ' · ' : ''}${esc(b.name)} · ${esc(b.email)} · Ref ${esc(b.id)}</small></div>
+    <small>${s ? esc(s.provider) + ' · ' : ''}${esc(b.name)} · ${esc(b.email)}<span class="ref-id"> · Ref ${esc(b.id)}</span></small></div>
     ${b.status === 'confirmed' ? '<button class="btn danger sm" data-cancel type="button">Cancel</button>' : ''}</div>`;
 }
 async function findBookings(more) {
