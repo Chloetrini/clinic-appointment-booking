@@ -81,10 +81,15 @@ def pool() -> ConnectionPool:
             if _pool is None:
                 p = ConnectionPool(
                     DATABASE_URL,
-                    min_size=1,
+                    # serverless: no standing connections, because Neon closes idle ones while the function sleeps
+                    min_size=0,
                     max_size=POOL_MAX,
+                    max_idle=30,
+                    max_lifetime=300,
+                    check=ConnectionPool.check_connection,  # drop a dead connection instead of handing it out
                     # pgbouncer (Neon's pooled endpoint) cannot keep server-side prepared statements
-                    kwargs={"prepare_threshold": None, "row_factory": dict_row},
+                    kwargs={"prepare_threshold": None, "row_factory": dict_row,
+                            "connect_timeout": 10, "keepalives": 1, "keepalives_idle": 15},
                     open=True,
                     timeout=20,
                 )
